@@ -3,6 +3,8 @@ import PIL
 import requests
 import numpy as np
 import io
+import re
+import matplotlib.pyplot as plt
 
 def check_channel(array,channel):
     red = 0; blue = 0; green = 0
@@ -60,3 +62,63 @@ def encuadre(array):
         else:
             sol.append(n)
     return sol
+
+def normalizacion(array):
+    maximo = max(array)
+    minimo = min(array)
+    n_array = []
+    for valor in array:
+        if maximo == minimo:
+            n_array.append(maximo)
+        else:
+            n_array.append((valor - minimo) / (maximo - minimo))
+            
+    return n_array
+
+replacements = {
+    'sin' : 'np.sin',
+    'cos' : 'np.cos',
+    'exp': 'np.exp',
+    'sqrt': 'np.sqrt',
+    'floor': 'np.floor',
+    'ceil': 'np.ceil',
+    '^': '**',
+}
+
+allowed_words = [
+    'x',
+    'sin',
+    'cos',
+    'sqrt',
+    'exp',
+    'floor',
+    'ceil',
+]
+
+def string2func(string):
+    try:
+        lista = list()
+        for word in re.findall('[a-zA-Z_]+', string):
+            lista.append(word)
+            if word not in allowed_words:
+                raise ValueError(
+                    '"{}" is forbidden to use in math expression'.format(word)
+                )
+
+        for old, new in replacements.items():
+            string = string.replace(old, new)
+            
+        if string.find('x') == -1:
+            string += '+0*x'
+        
+        def func(x):
+            return eval(string)
+        
+        return func
+    except Exception as e:
+        return e
+
+if __name__ == '__main__':
+    x = np.linspace(0, 256, 256)
+    y = 0.5+0.0*x
+    print(normalizacion(y))

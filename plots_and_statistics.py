@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import utils as utilities
 import functions as f
 import cv2
+import statistics as s
 
 def histograma_blanco_negro(imagen):
     ancho, alto = imagen.size
@@ -93,37 +94,13 @@ def histograma_color(imagen):
     plt.clf()
     return grafica
 
-def image_bn_to_fake_color(imagen):
+def image_bn_to_fake_color(imagen,y_red,y_green,y_blue):
     
     imagen = imagen.convert('L')
-    #SE DEFINE EL VECTOR DE VALORES QUE VA TOMAR LA X, QUE VA A SER EL TONO DE GRIS 0-255
-    x = np.linspace(0, 256, 1000)
-    #SE DEFINE TAMBIEN LAS FUNCIONES, DE LAS QUE MAS TARDE SE OBTENDRA LA PROPORCION DE
-    #R, G Y B QUE TENDRA LA IMAGEN DEPENDIENDO DEL TONO DE GRIS (VER EL GRAFICO)
-    
-    y_red = 0.5*np.cos(0.1*x-150)+0.5
-    y_green = 0.5*np.sin(0.1*x-1)+0.5
-    T = 256
-    y_blue = x / T - np.floor(x / T)
-    #NORMALIZO LAS FUNCIONES PARA ASEGURARME QUE LOS RESULTADOS ESTAN ENTRE 0 Y 1
-    y_red = utilities.encuadre(y_red)
-    y_green = utilities.encuadre(y_green)
-    y_blue = utilities.encuadre(y_blue)
     
     #SE GUARDA EN UN UNA TUPLA DE TUPLAS, CUYAS TUPLAS SON CADA TRIO RGB QUE SUSTITUIRA
     #AL TONO DE GRIS 
     grafica_rgb = tuple(zip(y_red, y_green, y_blue))
-    
-    plt.plot(x, y_red,color='red')
-    plt.plot(x, y_green,color='green')
-    plt.plot(x, y_blue,color='blue')
-    plt.title('Funciones que representa cada valor RGB que tomará cada nivel de gris')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.legend()
-    plt.grid(True)
-    grafica = utilities.fig2img(plt.gcf())
-    plt.clf()
     
     old_image = imagen.load()
     ancho, alto = imagen.size
@@ -143,7 +120,7 @@ def image_bn_to_fake_color(imagen):
     
     sol = PIL.Image.new("RGB", (ancho, alto))
     sol.putdata(new_image)
-    return sol, grafica
+    return sol
 
 def varianza_minima(imagen):
     # Convertir la imagen a escala de grises
@@ -185,7 +162,84 @@ def varianza_minima(imagen):
 def sliding(imagen):
     pass
 
+def varianza(imagen):
+    ancho, alto = imagen.size
+    if imagen.mode != 'L':
+        imagen = imagen.convert("L")
+    imagen = imagen.load()
+    new_array=[]
+    x=0
+    y=0
+    while y < alto:
+        new_array.append(imagen[x,y]) 
+        x+=1
+        if x >= ancho:
+            x=0
+            y+=1
+            
+    return s.mean(new_array)
+
+def binarizacion_por_umbral(imagen, umbral):
+    ancho, alto = imagen.size
+    if imagen.mode != 'L':
+        imagen = imagen.convert("L")
+    imagen = imagen.load()
+    new_image=[]
+    x=0
+    y=0
+    while y < alto:
+        if imagen[x,y] > umbral:
+            new_image.append(255)
+        else:
+            new_image.append(0) 
+        x+=1
+        if x >= ancho:
+            x=0
+            y+=1
+    
+    sol = PIL.Image.new("L", (ancho, alto))
+    sol.putdata(new_image)
+    return sol
+
+def binarizacion_entorno(imagen, entorno):
+    ancho, alto = imagen.size
+    if imagen.mode != 'L':
+        imagen = imagen.convert("L")
+    imagen = np.array(imagen)
+    new_image = np.zeros_like(imagen,dtype=np.uint8)
+    
+    for y in range(alto):
+        for x in range(ancho):
+            #Asigana los valores dependiendo de la cantidad de pixeles con los que se quiere hacer la media 
+            if entorno in range(3, 16, 2): 
+                y1 = y - (entorno // 2)
+                y2 = y + (entorno // 2) + 1
+                x1 = x - (entorno // 2)
+                x2 = x + (entorno // 2) + 1
+            else:
+                y1 = y - 1
+                y2 = y + 2
+                x1 = x - 1
+                x2 = x + 2
+            vecinos = []
+            for i in range(max(0,y1), min(alto, y2)):
+                for j in range(max(0, x1), min(ancho, x2)):
+                    if (i, j) != (y, x):
+                        vecinos.append(imagen[i, j])
+
+            media = sum(vecinos) / len(vecinos)
+            if imagen[y, x] > media:
+                new_image[y, x] = 255
+            else:
+                new_image[y, x] = 0
+
+    return Image.fromarray(new_image, 'L')
+
 if __name__ == '__main__':
-    #imagen = PIL.Image.open('bn/prueba.jpg')
-    #histograma_blanco_negro(imagen).show()
-    pass
+    pass    
+    '''
+    imagen_binarizada = binarizar_por_media_entorno('mujer.jpg')
+    cv2.imshow('Imagen Binarizada', imagen_binarizada)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    '''
