@@ -205,7 +205,7 @@ if image != None:
                 Rmin = st.slider("Nivel de gris minimo resultante = R maximo", 0, 255,step=1,value=0)
                 Rmax = st.slider("Nivel de gris maximo resultante = R maximo", 0, 255,step=1,value=255)
                 col_rh_sh_1, col_rh_sh_2 = st.columns(2)
-                new_image_shrinking = p.image_bn_to_realce_shrinking(new_image_black_white,iMin, iMax, Rmin, Rmax)
+                new_image_shrinking = p.image_bn_to_realce_shrinking(new_image_black_white,iMin2, iMax2, Rmin, Rmax)
                 new_histograma_bn_realce_shrinking = p.histograma_blanco_negro(new_image_shrinking,limite=limite_y)
                 col_rh_sh_1.image(new_image_shrinking, caption='Nueva imagen con shrinking')
                 col_rh_sh_2.image(new_histograma_bn_realce_shrinking,caption='Histograma de la imagen con shrinking')
