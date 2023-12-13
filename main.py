@@ -16,11 +16,21 @@ input_box_image = st.text_input("Imagen a comparar", value=None)
 file = st.file_uploader("Sube una imagen", type=["png", "jpg"])
 
 col_options_1,col_options_2,col_options_3,col_options_4 = st.columns(4)
-bn = col_options_1.checkbox("Blanco y negro", value=False)
+bn = col_options_1.checkbox("Blanco y negro", value=False)        
 color_check = col_options_2.checkbox("Mascara de color", value=False)
 channel_check = col_options_3.checkbox("Cambio de canal RGB", value=False)
 fake_check = col_options_4.checkbox("Fake color", value=False)
 limite_y = st.slider("Limite del histograma en el eje Y para imagenes en blanco y negro", 0, 100000,step=1,value=5000)
+f_ideales = False;f_no_ideales = False;bina = False;real = False;slid = False;strech = False;shrin = False;
+if bn != False:
+    col_bn_options_1,col_bn_options_2,col_bn_options_3,col_bn_options_4,col_bn_options_5,col_bn_options_6,col_bn_options_7 = st.columns(7)
+    f_ideales = col_bn_options_1.checkbox("Filtros Ideales", value=False) 
+    f_no_ideales = col_bn_options_2.checkbox("Filtros NO Ideales", value=False) 
+    bina = col_bn_options_3.checkbox("Binarizacion", value=False) 
+    real = col_bn_options_4.checkbox("Realce", value=False) 
+    slid = col_bn_options_5.checkbox("Sliding", value=False) 
+    strech = col_bn_options_6.checkbox("Streching", value=False) 
+    shrin = col_bn_options_7.checkbox("Shrinking", value=False) 
 
 image = None
 if input_box_image != None and file != None:
@@ -111,8 +121,7 @@ if image != None:
                     new_image_fake_color = p.image_bn_to_fake_color(image,y_red,y_green,y_blue)
                     col_1.image(new_image_fake_color, caption='Imagen en Fake Color de la imagen en Blanco y Negro')
         
-        if bn != False:
-            
+        if f_ideales != False:
             with st.expander("Filtros IDEALES"):
                 tam1 = st.slider("Tamaño de la imagen de la imagen resultante.", 512, 1000,step=2)
                 st.write('Filtros pasa alta y baja IDEAL')
@@ -124,7 +133,7 @@ if image != None:
                 f_pasa_alta_ideal = filtros.filtro_pasa_alta_ideal(new_image_black_white,tam1,slider2)
                 col_t_1.image(f_pasa_baja_ideal, caption='Filtro pasa de baja ideal')
                 col_t_2.image(f_pasa_alta_ideal, caption='Filtro pasa de alta ideal')
-
+        if f_no_ideales != False:
             with st.expander("Filtros NO IDEALES"):
                 tam2 = st.slider("Tamaño de la imagen de la imagen resultante", 512, 1000,step=2)
                 col_s_3, col_s_4 = st.columns(2)
@@ -141,7 +150,7 @@ if image != None:
                 col_r_1.image(new_image_black_white.resize((tam2,tam2)), caption='Imagen original en blanco y negro')
                 col_r_2.image(f_suma, caption='Sharpening (Imagen original + Filtro pasa alta no ideal)')            
                 
-        if bn != False:
+        if bina != False:
             with st.expander("Binarizacion"):
                 col_b_1, col_b_2 = st.columns(2)
                 col_b_3, col_b_4 = st.columns(2)
@@ -155,7 +164,7 @@ if image != None:
                 texto = 'Binarizacion por entorno: Media de vecinos {}x{}'.format(tam, tam)
                 col_b_4.image(f_binarizacion_entorno, caption=texto)
                 
-        if bn != False:
+        if real != False:
             with st.expander("Realce por funcion"):
                 x_realce = np.linspace(0, 256, 256)
                 tecnica_realce = st.radio("Transformacion de la grafica para entrar en 0 y 255", ["Clipping","Normalizar"])
@@ -180,7 +189,7 @@ if image != None:
                     col_realce_2.image(new_histograma_bn_realce, caption='Histograma del realce de la imagen en Blanco y Negro')
                     st.image(new_image_bn_realece, caption='Imagen en blanco y negro con realce')
                     
-        if bn != False:
+        if slid != False:
             with st.expander("Sliding"):
                 k = st.slider("Mover k pixeles", -255, 255,step=1,value=0)
                 st.write('Para visualizar correctamente el histograma, modifique el maximo en el eje Y del histograma')
@@ -189,7 +198,7 @@ if image != None:
                 new_histograma_bn_realce_k = p.histograma_blanco_negro(new_image_bn_realece_k,limite=limite_y)
                 col_rh_1.image(new_image_bn_realece_k, caption='Nueva imagen con desplazamiento de k={}'.format(k))
                 col_rh_2.image(new_histograma_bn_realce_k,caption='Histograma con desplazamiento de k={}'.format(k))
-            
+        if strech != False:
             with st.expander("Streching"):
                 iMin = st.slider("Nivel de gris minimo = I minimo", 0, 255,step=1,value=0)
                 iMax = st.slider("Nivel de gris maximo = I maximo", 0, 255,step=1,value=255)
@@ -198,7 +207,7 @@ if image != None:
                 new_histograma_bn_realce_streching = p.histograma_blanco_negro(new_image_streching,limite=limite_y)
                 col_rh_s_1.image(new_image_streching, caption='Nueva imagen con streching')
                 col_rh_s_2.image(new_histograma_bn_realce_streching,caption='Histograma de la imagen con streching')
-                
+        if shrin != False:
             with st.expander("Shrinking"):
                 iMin2 = st.slider("Nivel de gris minimo de entrada = I minimo", 0, 255,step=1,value=0)
                 iMax2 = st.slider("Nivel de gris maximo de entrada = I maximo", 0, 255,step=1,value=255)
