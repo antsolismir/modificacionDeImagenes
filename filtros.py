@@ -1,7 +1,6 @@
 import PIL
 import numpy as np
 import cv2
-import functions as f
 
 def filtro_pasa_baja_ideal(imagen, tam, d0):
     imagen = np.array(imagen)
@@ -104,11 +103,3 @@ def filtro_pasa_alta_no_ideal(imagen,tam,sigma):
     #Lo tranformamos en imagen
     filtradaPA = PIL.Image.fromarray(ImageFilteredN_PA)
     return filtradaPA
-
-if __name__ == '__main__':
-    #imagen = PIL.Image.open('bn/prueba.jpg')
-    #histograma_blanco_negro(imagen).show()
-    
-    i = PIL.Image.open('mujer.jpg')
-    image = f.image_to_gray(i)
-    ni= filtro_pasa_baja_ideal(image,10).show()

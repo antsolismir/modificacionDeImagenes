@@ -4,7 +4,6 @@ import requests
 import numpy as np
 import io
 import re
-import matplotlib.pyplot as plt
 
 def check_channel(array,channel):
     red = 0; blue = 0; green = 0
@@ -75,6 +74,29 @@ def normalizacion(array):
             
     return n_array
 
+def normalizacion_bn_realce(array):
+    maximo = max(array)
+    minimo = min(array)
+    n_array = []
+    for valor in array:
+        if maximo == minimo:
+            n_array.append(maximo)
+        else:
+            n_array.append(((valor - minimo) / (maximo - minimo))*255)
+            
+    return n_array
+
+def encuadre_bn_realce(array):
+    sol = list()
+    for n in array:
+        if n >= 255:
+            sol.append(255)
+        elif n<=0:
+            sol.append(0)
+        else:
+            sol.append(n)
+    return sol
+
 replacements = {
     'sin' : 'np.sin',
     'cos' : 'np.cos',
@@ -117,8 +139,3 @@ def string2func(string):
         return func
     except Exception as e:
         return e
-
-if __name__ == '__main__':
-    x = np.linspace(0, 256, 256)
-    y = 0.5+0.0*x
-    print(normalizacion(y))

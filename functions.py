@@ -1,7 +1,4 @@
-from PIL import Image
 import PIL
-import requests
-import numpy as np
 import utils as utilities
 
 ###################################

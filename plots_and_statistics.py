@@ -1,14 +1,11 @@
 from PIL import Image
 import PIL
-import requests
 import numpy as np
 import matplotlib.pyplot as plt
 import utils as utilities
-import functions as f
-import cv2
 import statistics as s
 
-def histograma_blanco_negro(imagen):
+def histograma_blanco_negro(imagen,limite=5000):
     ancho, alto = imagen.size
     matrix = np.zeros([256])
     if imagen.mode != 'L':
@@ -25,6 +22,7 @@ def histograma_blanco_negro(imagen):
     
     x = np.arange(len(matrix))
     y = np.array(matrix)
+    plt.ylim(0, limite)
     plt.title("Histograma de la imagen en blanco y negro")
     plt.xlabel("Rango de grises") 
     plt.ylabel("Numero de pixeles") 
@@ -119,6 +117,92 @@ def image_bn_to_fake_color(imagen,y_red,y_green,y_blue):
             y+=1
     
     sol = PIL.Image.new("RGB", (ancho, alto))
+    sol.putdata(new_image)
+    return sol
+
+def image_bn_to_realce(imagen, realce):
+    imagen = imagen.convert('L')
+    old_image = imagen.load()
+    ancho, alto = imagen.size
+    new_image = []
+    x=0; y=0
+    while y < alto:
+        tono_gris = old_image[x,y]
+        new_image.append(realce[tono_gris])
+        x+=1
+        if x >= ancho:
+            x=0
+            y+=1
+    
+    sol = PIL.Image.new("L", (ancho, alto))
+    sol.putdata(new_image)
+    return sol
+
+def image_bn_to_realce_k(imagen, k):
+    old_image = imagen.load()
+    ancho, alto = imagen.size
+    new_image = []
+    x=0; y=0
+    while y < alto:
+        tono_gris = old_image[x,y]
+        if (tono_gris + k) > 255:
+            new_image.append(255)
+        elif (tono_gris + k) < 0:
+            new_image.append(0)
+        else:
+            new_image.append(tono_gris+k)
+        x+=1
+        if x >= ancho:
+            x=0
+            y+=1
+    
+    sol = PIL.Image.new("L", (ancho, alto))
+    sol.putdata(new_image)
+    return sol
+
+def image_bn_to_realce_streching(imagen, iMin, iMax):
+    old_image = imagen.load()
+    ancho, alto = imagen.size
+    new_image = []
+    x=0; y=0
+    while y < alto:
+        tono_gris = old_image[x,y]
+        if (tono_gris) <= iMax and (tono_gris) >= iMin:
+            new_value = (255/(iMax-iMin))*(tono_gris-iMin)
+            new_image.append(new_value)
+        elif (tono_gris) > iMax:
+            new_image.append(255)
+        else:
+            new_image.append(0)
+        x+=1
+        if x >= ancho:
+            x=0
+            y+=1
+    
+    sol = PIL.Image.new("L", (ancho, alto))
+    sol.putdata(new_image)
+    return sol
+
+def image_bn_to_realce_shrinking(imagen, iMin, iMax, Rmin, Rmax):
+    old_image = imagen.load()
+    ancho, alto = imagen.size
+    new_image = []
+    x=0; y=0
+    while y < alto:
+        tono_gris = old_image[x,y]
+        if (tono_gris) <= iMax and (tono_gris) >= iMin:
+            new_value = (Rmax-Rmin)/(iMax-iMin)*(tono_gris-iMin)+Rmin
+            new_image.append(new_value)
+        elif (tono_gris) > iMax:
+            new_image.append(Rmax)
+        else:
+            new_image.append(Rmin)
+        x+=1
+        if x >= ancho:
+            x=0
+            y+=1
+    
+    sol = PIL.Image.new("L", (ancho, alto))
     sol.putdata(new_image)
     return sol
 
@@ -236,10 +320,9 @@ def binarizacion_entorno(imagen, entorno):
     return Image.fromarray(new_image, 'L')
 
 if __name__ == '__main__':
-    pass    
-    '''
-    imagen_binarizada = binarizar_por_media_entorno('mujer.jpg')
-    cv2.imshow('Imagen Binarizada', imagen_binarizada)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    '''
+    x_realce = np.linspace(0, 256, 256)
+    string = utilities.string2func('x^2')
+    y_realce = utilities.encuadre_bn_realce(string(x_realce))
+    plt.plot(x_realce, y_realce)
+    plt.show()
+    image_bn_to_realce(PIL.Image.open('newyork_bn.jpg'), y_realce).show()
