@@ -318,11 +318,3 @@ def binarizacion_entorno(imagen, entorno):
                 new_image[y, x] = 0
 
     return Image.fromarray(new_image, 'L')
-
-if __name__ == '__main__':
-    x_realce = np.linspace(0, 256, 256)
-    string = utilities.string2func('x^2')
-    y_realce = utilities.encuadre_bn_realce(string(x_realce))
-    plt.plot(x_realce, y_realce)
-    plt.show()
-    image_bn_to_realce(PIL.Image.open('newyork_bn.jpg'), y_realce).show()
