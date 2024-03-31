@@ -60,7 +60,7 @@ if image != None:
             with st.expander("Blanco y negro"):
                 col_1, col_2 = st.columns(2)
                 new_image_black_white = f.image_to_gray(imagen=image)
-                histograma_bn = p.histograma_blanco_negro(new_image_black_white)
+                histograma_bn = p.histograma_blanco_negro(new_image_black_white,limite=limite_y)
                 col_1.image(new_image_black_white,caption='Imagen en blanco y negro')
                 col_2.image(histograma_bn, caption='Histograma de la imagen en blanco y negro')
 
